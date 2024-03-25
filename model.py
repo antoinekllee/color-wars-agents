@@ -1,6 +1,16 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class DQN(nn.Module):
-    # Define deep Q-network architecture
+    def __init__(self, input_dim, output_dim):
+        super(DQN, self).__init__()
+        # Assuming input_dim is the flattened state size and output_dim is the number of actions
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, output_dim)
 
-    pass
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        return self.fc3(x)

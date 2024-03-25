@@ -44,7 +44,7 @@ class Agent:
             self.model.train()
             return np.argmax(action_values.cpu().data.numpy())
         else:
-            return random.choice(np.arange(self.action_size))
+            return np.random.randint(self.action_size)
 
     def learn(self, experiences):
         states, actions, rewards, next_states, dones = zip(*experiences)
@@ -52,7 +52,7 @@ class Agent:
         actions = torch.LongTensor(actions).view(-1, 1)
         rewards = torch.FloatTensor(rewards).view(-1, 1)
         next_states = torch.FloatTensor(next_states)
-        dones = torch.FloatTensor(dones).view(-1, 1)
+        dones = torch.FloatTensor(dones).view(-1, 1)ype=torch.float).unsqueeze(-1)
 
         Q_targets_next = self.model(next_states).detach().max(1)[0].unsqueeze(1)
         Q_targets = rewards + (self.gamma * Q_targets_next * (1 - dones))

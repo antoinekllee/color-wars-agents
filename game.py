@@ -92,7 +92,7 @@ def play_game():
         print(f"Player {player.upper()}'s turn.")
         row = validate_input("Enter the row (0-4): ", range(5))
         col = validate_input("Enter the column (0-4): ", range(5))
-        while grid[row][col][0] != player:
+        while grid[row][col][0] != player: 
             print("You can only pop your own pieces. Please choose another position.")
             row = validate_input("Enter the row (0-4): ", range(5))
             col = validate_input("Enter the column (0-4): ", range(5))

@@ -19,7 +19,6 @@ def display_grid(grid):
         print(f'{i} | ' + ' | '.join(colored_row) + ' |')
         print('  ' + '-' * 26)
 
-
 def validate_input(prompt, valid_range):
     while True:
         try:
@@ -79,29 +78,50 @@ def check_all_moves(grid, player):
     
     return moves
 
-def get_best_move(grid: list, player: str):
-    moves = check_all_moves(grid, player)
-    move_dict = dict()
-    
-    # print(moves)
-    max = 0
-    best_move = moves[0]
-    for move in moves:
-        r, c = move
-        state = deepcopy(grid)
-        pop_piece(state, player, r, c)
-        score=0
-        for i in range(len(state)):
-            for j in range(len(state[0])):
-                if state[i][j][0] == player:
-                    score += int(state[i][j][-1])
-        
-        if score > max: 
-            best_move = move
-            max = score
+def evaluate_board(grid, player):
+    # returns a score that is negatively proportional to the number of opponent dots
+    opp = 'r' if player=='b' else 'b'
+    score = 0
+    for i in range(len(grid)):
+            for j in range(len(grid[0])):
+                if grid[i][j][0] == opp:
+                    score += int(grid[i][j][-1])
+    return -score
 
-        move_dict[move] = score
-    print(move_dict)
+def minimax(grid, depth, is_maximizing, player):
+    best_move = None
+
+    if depth == 0 or not has_pieces(grid, 'r') or not has_pieces(grid, 'b'):
+        # Base case: return the heuristic value of the board
+        return evaluate_board(grid, player), None
+    
+    if is_maximizing:
+        max_eval = float('-inf')
+        for move in check_all_moves(grid, player):
+            # Create a copy of the grid to simulate the move
+            new_grid = deepcopy(grid)
+            pop_piece(new_grid, player, move[0], move[1])
+            eval, _ = minimax(new_grid, depth - 1, False, player)
+            if eval > max_eval:
+                max_eval = eval
+                best_move = move
+        return max_eval, best_move
+    
+    else:
+        min_eval = float('inf')
+        opponent = 'r' if player == 'b' else 'b'
+        for move in check_all_moves(grid, opponent):
+            # Create a copy of the grid to simulate the move
+            new_grid = deepcopy(grid)
+            pop_piece(new_grid, opponent, move[0], move[1])
+            eval, _ = minimax(new_grid, depth - 1, True, player)
+            if eval < min_eval:
+                min_eval = eval
+                best_move = move
+        return min_eval, best_move
+
+def get_best_move(grid, player, depth=3):
+    _, best_move = minimax(grid, depth, True, player)
     return best_move
 
 def play_game():
@@ -124,9 +144,8 @@ def play_game():
     # Subsequent moves
     while True:
         player = players[current_player]
-        print(f"Player {player.upper()}'s turn.")
         display_grid(grid)
-
+        print(f"Player {player.upper()}'s turn.")
         print(get_best_move(grid, player))
         # print(player)
 

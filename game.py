@@ -1,4 +1,5 @@
 from termcolor import colored
+from copy import deepcopy
 
 def initialize_grid():
     return [['  ' for _ in range(5)] for _ in range(5)]
@@ -68,6 +69,41 @@ def has_pieces(grid, player):
                 return True
     return False
 
+def check_all_moves(grid, player):
+    moves = []
+
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            if grid[row][col][0] == player:
+                moves.append((row, col))
+    
+    return moves
+
+def get_best_move(grid: list, player: str):
+    moves = check_all_moves(grid, player)
+    move_dict = dict()
+    
+    # print(moves)
+    max = 0
+    best_move = moves[0]
+    for move in moves:
+        r, c = move
+        state = deepcopy(grid)
+        pop_piece(state, player, r, c)
+        score=0
+        for i in range(len(state)):
+            for j in range(len(state[0])):
+                if state[i][j][0] == player:
+                    score += int(state[i][j][-1])
+        
+        if score > max: 
+            best_move = move
+            max = score
+
+        move_dict[move] = score
+    print(move_dict)
+    return best_move
+
 def play_game():
     grid = initialize_grid()
     players = ['b', 'r']
@@ -88,14 +124,20 @@ def play_game():
     # Subsequent moves
     while True:
         player = players[current_player]
-        display_grid(grid)
         print(f"Player {player.upper()}'s turn.")
+        display_grid(grid)
+
+        print(get_best_move(grid, player))
+        # print(player)
+
         row = validate_input("Enter the row (0-4): ", range(5))
         col = validate_input("Enter the column (0-4): ", range(5))
+
         while grid[row][col][0] != player:
             print("You can only pop your own pieces. Please choose another position.")
             row = validate_input("Enter the row (0-4): ", range(5))
             col = validate_input("Enter the column (0-4): ", range(5))
+
         pop_piece(grid, player, row, col)
 
         if not has_pieces(grid, players[1 - current_player]):
@@ -104,5 +146,6 @@ def play_game():
             break
 
         current_player = 1 - current_player
+
 
 play_game()

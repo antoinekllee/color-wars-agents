@@ -1,5 +1,6 @@
 from termcolor import colored
 from copy import deepcopy
+from time import sleep, time
 
 def initialize_grid():
     return [['  ' for _ in range(5)] for _ in range(5)]
@@ -80,13 +81,17 @@ def check_all_moves(grid, player):
 
 def evaluate_board(grid, player):
     # returns a score that is negatively proportional to the number of opponent dots
+    # and proportional to the number of player dots
     opp = 'r' if player=='b' else 'b'
-    score = 0
+    p_score = 0
+    opp_score = 0
     for i in range(len(grid)):
             for j in range(len(grid[0])):
                 if grid[i][j][0] == opp:
-                    score += int(grid[i][j][-1])
-    return -score
+                    opp_score += int(grid[i][j][-1])
+                elif grid[i][j][0] == player:
+                    p_score += int(grid[i][j][-1])
+    return p_score - 3*opp_score
 
 def minimax(grid, depth, is_maximizing, player):
     best_move = None
@@ -120,13 +125,22 @@ def minimax(grid, depth, is_maximizing, player):
                 best_move = move
         return min_eval, best_move
 
-def get_best_move(grid, player, depth=3):
+def get_best_move(grid, player, depth=2):
     _, best_move = minimax(grid, depth, True, player)
     return best_move
 
 def play_game():
     grid = initialize_grid()
     players = ['b', 'r']
+    bots = []
+    b_depth = 2
+    r_depth = 2
+    if 'Y' in input("Automote player B? (Y/N) ").upper():
+        bots.append('b')
+        b_depth = int(input("Player b depth:  "))
+    if 'Y' in input("Automote player R? (Y/N) ").upper():
+        bots.append('r')
+        r_depth = int(input("Player r depth:  "))
     current_player = 0
 
     # First move
@@ -146,16 +160,23 @@ def play_game():
         player = players[current_player]
         display_grid(grid)
         print(f"Player {player.upper()}'s turn.")
-        print(get_best_move(grid, player))
-        # print(player)
+        
+        depth = b_depth if player=='b' else r_depth
+        if player in bots:
+            st = time()
+            row, col = get_best_move(grid, player, depth)
+            et = time()
+            if et-st < 1: 
+                sleep(1-(et-st))
 
-        row = validate_input("Enter the row (0-4): ", range(5))
-        col = validate_input("Enter the column (0-4): ", range(5))
-
-        while grid[row][col][0] != player:
-            print("You can only pop your own pieces. Please choose another position.")
+        else:
             row = validate_input("Enter the row (0-4): ", range(5))
             col = validate_input("Enter the column (0-4): ", range(5))
+
+            while grid[row][col][0] != player:
+                print("You can only pop your own pieces. Please choose another position.")
+                row = validate_input("Enter the row (0-4): ", range(5))
+                col = validate_input("Enter the column (0-4): ", range(5))
 
         pop_piece(grid, player, row, col)
 
